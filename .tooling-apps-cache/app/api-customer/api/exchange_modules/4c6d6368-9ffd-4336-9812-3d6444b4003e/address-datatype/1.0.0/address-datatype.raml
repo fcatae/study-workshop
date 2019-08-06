@@ -1,0 +1,35 @@
+#%RAML 1.0 Library
+usage: Defines address format for Orders
+
+types:   
+  dateTime:
+    properties:
+      type: string
+
+  period:
+    properties:
+      start?: dateTime
+      end?: dateTime      
+
+  address:
+    properties:
+      use?:
+        type: string
+        enum: [home, work, temp, old]
+      type?:
+        type: string
+        enum: [postal, physical, both]
+      text?:
+      line?: string[]
+      city?: string
+      district?: string
+      state?: string
+      postalCode?: string
+      country?: 
+        type: string
+        displayName: Country Code
+        description: Country Code
+        maxLength: 3
+      period?: 
+        type: period
+        description: Start/End date for the address

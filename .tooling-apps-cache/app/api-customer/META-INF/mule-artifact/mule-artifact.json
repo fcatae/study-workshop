@@ -1,0 +1,39 @@
+{
+  "configs": [
+    "api.xml"
+  ],
+  "secureProperties": [],
+  "redeploymentEnabled": true,
+  "name": "com.mycompany:api-customer:1.0.0-SNAPSHOT",
+  "minMuleVersion": "4.2.0",
+  "requiredProduct": "MULE_EE",
+  "classLoaderModelLoaderDescriptor": {
+    "id": "mule",
+    "attributes": {
+      "exportedPackages": [],
+      "exportedResources": [
+        "log4j2.xml",
+        "configuration/config.yaml",
+        "api/exchange_modules/4c6d6368-9ffd-4336-9812-3d6444b4003e/error-datatype/1.0.0/error-datatype.raml",
+        "api/exchange_modules/4c6d6368-9ffd-4336-9812-3d6444b4003e/pageable-trait/1.0.0/pageable-trait.raml",
+        "api/exchange_modules/4c6d6368-9ffd-4336-9812-3d6444b4003e/address-datatype/1.0.0/address-datatype.raml",
+        "api/exchange_modules/4c6d6368-9ffd-4336-9812-3d6444b4003e/rest-headers-trait/1.0.0/rest-headers-trait.raml",
+        "api/exchange_modules/4c6d6368-9ffd-4336-9812-3d6444b4003e/client-id-secured-trait/1.0.0/client-id-secured.raml",
+        "api/exchange_modules/4c6d6368-9ffd-4336-9812-3d6444b4003e/client-id-secured-trait/1.0.0/client-id-enforcement-trait.raml",
+        "api/exchange_modules/4c6d6368-9ffd-4336-9812-3d6444b4003e/customer-datatype/1.0.0/customer-datatype.raml",
+        "api/exchange_modules/4c6d6368-9ffd-4336-9812-3d6444b4003e/customer-datatype/1.0.0/createdCustomer-datatype.raml",
+        "api/api.raml",
+        "api/examples/customer_post_response_example.raml",
+        "api/examples/customer_post_request_example.raml",
+        "api/examples/customer_example.raml",
+        "api/examples/customer_collection_example.raml",
+        "api/customer-api.raml",
+        "api.xml"
+      ]
+    }
+  },
+  "bundleDescriptorLoader": {
+    "id": "mule",
+    "attributes": {}
+  }
+}
