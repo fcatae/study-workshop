@@ -1,0 +1,21 @@
+#%RAML 1.0 Library
+usage: Defines standard structure of a customer
+
+uses:
+  Address: /exchange_modules/4c6d6368-9ffd-4336-9812-3d6444b4003e/address-datatype/1.0.0/address-datatype.raml
+
+types:
+  customer:
+    properties:
+      id?:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      email:
+        type: string
+      billingAddress?:
+        type: Address.address
+      shippingAddress?:
+        type: Address.address
