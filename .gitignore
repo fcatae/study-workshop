@@ -1,3 +1,5 @@
 .metadata/
 .mule/
+.tooling/
+.tooling-apps-cache/
 target/
