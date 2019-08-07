@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+    <http:listener-config name="api-httpListenerConfig">
+        <http:listener-connection host="0.0.0.0" port="8081" />
+    </http:listener-config>
+    <apikit:config name="api-config" raml="api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <db:config name="MySQL_Config" doc:name="Database Config" doc:id="6e087677-3caf-4fe5-a74a-7f95ac2ec736" >
+		<db:my-sql-connection host="services.mythicalcorp.com" port="3306" user="product" password="Mule1379" database="products_test" />
+	</db:config>
+	<flow name="api-main">
+        <http:listener config-ref="api-httpListenerConfig" path="/api/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="api-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:BAD_REQUEST">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Bad request"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">400</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_FOUND, APP:NOTFOUND" enableNotifications="true" logException="true">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Method not allowed"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">405</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not acceptable"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">406</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Unsupported media type"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">415</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not Implemented"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">501</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="api-console">
+        <http:listener config-ref="api-httpListenerConfig" path="/console/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="api-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="put:\product\(id):application\json:api-config">
+        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core">
+            <ee:variables>
+                <ee:set-variable variableName="id">attributes.uriParams.id</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <logger level="INFO" message="put:\product\(id):application\json:api-config" />
+    </flow>
+    <flow name="delete:\product\(id):application\json:api-config">
+        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core">
+            <ee:variables>
+                <ee:set-variable variableName="id">attributes.uriParams.id</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <logger level="INFO" message="delete:\product\(id):application\json:api-config" />
+    </flow>
+    <flow name="get:\product\(id):api-config">
+        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" doc:id="ec4f34db-87e8-4188-a6f1-922ffbbafe93">
+            <ee:variables>
+                <ee:set-variable variableName="id"><![CDATA[attributes.uriParams.id]]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <db:select doc:name="Get Product by ID" doc:id="5f548836-098d-47ee-a6db-03df269292b9" config-ref="MySQL_Config">
+			<db:sql>SELECT p.id, p.name, p.description, p.product_number, p.manufactured, p.colors, p.categories, p.stock, p.safety_stock_level, p.standard_cost, p.list_price, p.size, p.size_unit_measure_code, p.weight, p.weight_unit_measure_code, p.days_to_manufacture, p.images,  p.modified_date, p.created_date
+FROM product p
+WHERE p.id = :id</db:sql>
+			<db:input-parameters ><![CDATA[#[%dw 2.0
+output application/java
+---
+{
+	id: vars.id as String
+}]]]></db:input-parameters>
+		</db:select>
+		<validation:is-not-empty-collection doc:name="Is not empty collection" doc:id="cd29602d-6594-456c-b908-434def9e3bc1" >
+			<error-mapping sourceType="VALIDATION:EMPTY_COLLECTION" targetType="APP:NOTFOUND" />
+		</validation:is-not-empty-collection>
+		<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="0b34d906-bffb-4635-a4cb-80800e5c9275">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+var product = payload[0]
+---
+{
+	id: product.id,
+	name: product.name,
+	description: product.description,
+	manufactured: product.manufactured,
+	productNumber: product.product_number,
+	colors: (product.colors default "") splitBy "," ,
+	categories:(product.categories default "") splitBy "," ,
+	safetyStockLevel: product.safety_socket_level,
+	standardCost: (product.standard_cost default "0.0") as String {format: "##.##"} as Number,
+	listPrice: (product.list_price default "0.0") as String {format: "##.##"} as Number,
+	stock: product.stock,
+	safetyStockLevel: product.safety_stock_level,
+	daysToManufacture: product.days_to_manufacture,
+	size: product.size,
+	sizeUnitMeasureCode: product.size_unit_measure_code,
+	weight: product.weight,
+	weightUnitMeasureCode: product.weight_unit_measure_code,
+	daysToManufacture: product.days_to_manufacture,
+	images: (product.images default "") splitBy ",",
+	modifiedDate: (product.modified_date default "") as Date {format: "yyyy-MM-dd"},
+	createdDate: (product.created_date default "") as Date {format: "yyyy-MM-dd"}
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+		<tracking:custom-event doc:name="Found Product" doc:id="cc474872-108f-40a7-b57e-c4368280f474" event-name="Found Product Detail Event">
+			<tracking:meta-data key="Product Name" value="#[ payload.name ]" />
+			<tracking:meta-data key="Product ID" value="#[ payload.id ]" />
+		</tracking:custom-event>
+    </flow>
+    <flow name="get:\product:api-config">
+		<db:select doc:name="Get Products" doc:id="e6778077-e06d-44c6-b1ad-4af951567589" config-ref="MySQL_Config">
+			<db:sql >SELECT  p.id, p.name, p.description, p.product_number, p.manufactured, p.colors, p.categories, p.stock, p.safety_stock_level, p.standard_cost, p.list_price, p.size, p.size_unit_measure_code, p.weight, p.weight_unit_measure_code, p.days_to_manufacture, p.images,  p.modified_date, p.created_date
+FROM product p
+LIMIT 10</db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="93e50db0-219d-4ace-bc67-5f8c46632660" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map (product, index) -> {
+	id: product.id,
+    categories: (product.categories default "") splitBy ",",
+    colors: (product.colors default "") splitBy ",",
+    createdDate: product.created_date as String {format: "yyyy-MM-dd"},
+    modifiedDate: product.modified_date as String {format: "yyyy-MM-dd"},
+    safetyStockLevel: product.safety_stock_level as Number,
+    stock: product.stock as Number,
+    daysToManufacture: product.days_to_manufacture,
+    name: product.name,
+    description: product.description,
+    images: (product.images default "") splitBy ",",
+    listPrice: product.list_price,
+    manufactured: product.manufactured,
+    productNumber: product.product_number,
+    size: product.size,
+    sizeUnitMeasureCode: product.size_unit_measure_code,
+    standardCost: product.standard_cost,
+    weightUnitMeasureCode: product.weight_unit_measure_code,
+    weight: product.weight
+
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+    </flow>
+    <flow name="post:\product:application\json:api-config">
+        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="0974afe2-0514-4ff3-9903-487d0a391497">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  id: 1,
+  name: "ELMO",
+  description: "Playskool sesame street play all day Elmo",
+  productNumber: "UUID34234923934293",
+  manufactured: true,
+  safetyStockLevel: 540,
+  standardCost: 78.00,
+  listPrice: 99.90,
+  size: "200x300",
+  sizeUnitMeasureCode: "in",
+  weightUnitMeasureCode: "gr",
+  weight: 400,
+  daysToManufacture: 10,
+  categories: [
+    "playskool", 
+    "sesame street"
+  ],
+  stock: 2800,
+  colors: [
+    "blue", 
+    "red", 
+    "green"
+  ],
+  images: [
+    "/wcsstore/HTSStorefrontAssetStore/Attachment/HomePage/Product eSpots/Play-All-Day-Elmo.png"
+  ]
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+</mule>
