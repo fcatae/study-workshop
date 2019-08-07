@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway" xmlns:product-api="http://www.mulesoft.org/schema/mule/product-api" xmlns:orderfulfillment-api="http://www.mulesoft.org/schema/mule/orderfulfillment-api" xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:order-api="http://www.mulesoft.org/schema/mule/order-api" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd 
+<mule xmlns:product-api="http://www.mulesoft.org/schema/mule/product-api" xmlns:orderfulfillment-api="http://www.mulesoft.org/schema/mule/orderfulfillment-api" xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:order-api="http://www.mulesoft.org/schema/mule/order-api" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd 
 http://www.mulesoft.org/schema/mule/order-api http://www.mulesoft.org/schema/mule/order-api/current/mule-order-api.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
 http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
 http://www.mulesoft.org/schema/mule/orderfulfillment-api http://www.mulesoft.org/schema/mule/orderfulfillment-api/current/mule-orderfulfillment-api.xsd
-http://www.mulesoft.org/schema/mule/product-api http://www.mulesoft.org/schema/mule/product-api/current/mule-product-api.xsd
-http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd
-http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+http://www.mulesoft.org/schema/mule/product-api http://www.mulesoft.org/schema/mule/product-api/current/mule-product-api.xsd">
     <http:listener-config name="api-httpListenerConfig">
         <http:listener-connection host="0.0.0.0" port="8081" />
     </http:listener-config>
@@ -15,7 +13,6 @@ http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/m
     <order-api:config name="Order_API_Config" doc:name="Order API Config" doc:id="09d7d370-c5e6-435d-9320-9b2141627e14" property_host="${domain.api.host.orders}" property_port="80" property_protocol="HTTP"/>
 	<configuration-properties doc:name="Configuration properties" doc:id="bd185405-659f-4dfd-b548-5f921c7130de" file="configuration/config.yaml" />
 	<orderfulfillment-api:config name="Order_fulfillment_API_Config" doc:name="Order fulfillment API Config" doc:id="f48a9dfc-fcd9-4b45-b38a-8fe5a276d905" property_host="${process.api.host.fulfillment}" property_port="80" />
-	<api-gateway:autodiscovery apiId="15777583" doc:name="API Autodiscovery" doc:id="7d962847-32ed-417b-90ab-7ec0453eb0a4" flowRef="api-main" />
 	<flow name="api-main">
         <http:listener config-ref="api-httpListenerConfig" path="/api/*">
             <http:response statusCode="#[vars.httpStatus default 200]">
@@ -222,10 +219,8 @@ output application/json
             </ee:message>
         </ee:transform>
     </flow>
-    <flow name="get:\products\search:api-config" tracking:enable-default-events="true">
-        <set-variable value="#[attributes.queryParams.name]" doc:name="Set Variable" doc:id="4f512012-e3d8-4d18-bfe3-ace3b5963f40" variableName="searchName"/>
-		<tracking:transaction doc:name="Set Transaction Id" doc:id="1465dcd1-8d61-4f0c-b23c-41add60fc02e" id="#['get-products-search-' ++ uuid()]"/>
-		<product-api:get-products doc:name="Get products" doc:id="fd4c7f53-3a41-4d60-a845-cfbc5155d5a2" name="#[attributes.queryParams.name]" max-results="#[attributes.queryParams.maxResults]" offset="#[attributes.queryParams.offset]" client-id="${app.client_id}" client-secret="${app.client_secret}" config-ref="Product_API_Config"/>
+    <flow name="get:\products\search:api-config">
+        <product-api:get-products doc:name="Get products" doc:id="fd4c7f53-3a41-4d60-a845-cfbc5155d5a2" name="#[attributes.queryParams.name]" max-results="#[attributes.queryParams.maxResults]" offset="#[attributes.queryParams.offset]" client-id="${app.client_id}" client-secret="${app.client_secret}" config-ref="Product_API_Config"/>
 		<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="ed43e954-4027-4c76-8af4-03452c925c84">
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
@@ -244,10 +239,6 @@ payload map ( product , indexOfPayload01 ) -> {
 }]]></ee:set-payload>
             </ee:message>
         </ee:transform>
-		<tracking:custom-event doc:name="Custom Business Event" doc:id="df9548eb-0ec1-49b0-b2d9-f23814bfbff9" event-name="Product Search Event">
-			<tracking:meta-data key="Search String" value="#[vars.searchName]" />
-			<tracking:meta-data key="Search Results" value="#[ payload.name ]" />
-		</tracking:custom-event>
     </flow>
     <flow name="get:\orders\search:api-config">
         <order-api:get-orders doc:name="Get orders" doc:id="f8ff861b-dd02-4508-8ba6-396b94e1e336" config-ref="Order_API_Config" customer-id="#[attributes.queryParams.user_id]" client-id="${app.client_id}" client-secret="${app.client_secret}"/>
